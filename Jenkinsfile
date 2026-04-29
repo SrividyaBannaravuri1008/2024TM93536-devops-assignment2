@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         PYTHON = "C:\\Users\\srivi.DESKTOP-L6OI7G9\\AppData\\Local\\Python\\bin\\python.exe"
-        PIP = "C:\\Users\\srivi.DESKTOP-L6OI7G9\\AppData\\Local\\Python\\bin\\pip.exe"
+        IMAGE_NAME = "srividya1008/aceest-service"
     }
 
     stages {
@@ -23,14 +23,14 @@ pipeline {
                     call venv\\Scripts\\activate.bat
                     venv\\Scripts\\python.exe -m pip install --upgrade pip
                     venv\\Scripts\\pip.exe install -r requirements.txt
-                    venv\\Scripts\\pip.exe install flake8
+                    venv\\Scripts\\pip.exe install flake8 pytest
                 """
             }
         }
 
         stage('Lint') {
             steps {
-                echo 'Running flake8 syntax check...'
+                echo 'Running flake8 checks...'
                 bat """
                     call venv\\Scripts\\activate.bat
                     venv\\Scripts\\python.exe -m flake8 app.py --select=E9,F63,F7,F82 --show-source --statistics
@@ -40,7 +40,7 @@ pipeline {
 
         stage('Unit Tests') {
             steps {
-                echo 'Running Pytest unit tests...'
+                echo 'Running Pytest tests...'
                 bat """
                     call venv\\Scripts\\activate.bat
                     venv\\Scripts\\python.exe -m pytest tests/ -v --tb=short
@@ -48,15 +48,43 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube scan...'
+                bat """
+                    sonar-scanner
+                """
+            }
+        }
+
+        stage('Docker Build and Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    bat """
+                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                        docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .
+                        docker push %IMAGE_NAME%:%BUILD_NUMBER%
+                    """
+                }
+            }
+        }
     }
 
     post {
+
         success {
-            echo "BUILD SUCCESS - ACEest pipeline completed successfully."
+            echo 'BUILD SUCCESS - ACEest pipeline completed successfully.'
         }
+
         failure {
-            echo "BUILD FAILED - Check the logs above."
+            echo 'BUILD FAILED - Check logs.'
         }
+
         always {
             echo 'Cleaning up workspace...'
             bat 'if exist venv rmdir /s /q venv'
