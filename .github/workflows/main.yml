@@ -60,10 +60,19 @@ jobs:
           username: srividya1008
           password: ${{ secrets.DCKR_TOKEN }}
           
-      - run: |
-          docker build -t srividya1008/aceestfitness:${{ github.sha }} .
-          docker push srividya1008/aceestfitness:${{ github.sha }}
+      # - run: |
+      #     docker build -t srividya1008/aceestfitness:${{ github.sha }} .
+      #     docker push srividya1008/aceestfitness:${{ github.sha }}
 
-          docker tag srividya1008/aceestfitness:${{ github.sha }} srividya1008/aceestfitness:latest
-          docker push srividya1008/aceestfitness:latest
+      #     docker tag srividya1008/aceestfitness:${{ github.sha }} srividya1008/aceestfitness:latest
+      #     docker push srividya1008/aceestfitness:latest
           
+      - run: |
+          docker build -t srividya1008/aceestfitness:latest .
+          docker push srividya1008/aceestfitness:latest
+      
+          for tag in v1.0.0 v1.1.0 v1.1.2 v2.0.1 v2.1.2 v2.2.1 v2.2.4 v3.0.1 v3.1.2 v3.2.4
+          do
+            docker tag srividya1008/aceestfitness:latest srividya1008/aceestfitness:$tag
+            docker push srividya1008/aceestfitness:$tag
+          done
