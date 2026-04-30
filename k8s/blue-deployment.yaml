@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-blue
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    slot: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        slot: blue
+    spec:
+      containers:
+        - name: aceest-app
+          image: <YOUR_DOCKERHUB_USERNAME>/aceest-fitness:v1.0.0
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-green
+  namespace: aceest
+  labels:
+    app: aceest-fitness
+    slot: green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        slot: green
+    spec:
+      containers:
+        - name: aceest-app
+          image: <YOUR_DOCKERHUB_USERNAME>/aceest-fitness:v1.1.0   # NEW version
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-bg-service
+  namespace: aceest
+spec:
+  selector:
+    app: aceest-fitness
+    slot: blue      # Change to "green" to cut over traffic
+  ports:
+    - port: 80
+      targetPort: 5000
+  type: LoadBalancer
