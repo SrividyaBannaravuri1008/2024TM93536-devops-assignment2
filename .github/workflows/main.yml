@@ -1,0 +1,62 @@
+name: ACEest Fitness CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  build-and-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: |
+          pip install -r requirements.txt flake8
+
+      - run: |
+          flake8 app.py --max-line-length=120
+
+  automated-testing:
+    needs: build-and-lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: |
+          pip install -r requirements.txt pytest pytest-cov
+
+      - run: |
+          pytest tests/ -v --cov=. --cov-report=xml
+
+  docker-build-push:
+    needs: automated-testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - run: |
+          docker build -t srividya1008/aceest-fitness:${{ github.sha }} .
+          docker push srividya1008/aceest-fitness:${{ github.sha }}
+
+          docker tag srividya1008/aceest-fitness:${{ github.sha }} srividya1008/aceest-fitness:latest
+          docker push srividya1008/aceest-fitness:latest
