@@ -50,19 +50,18 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                echo 'Running SonarQube scan...'
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                        sonar-scanner ^
-                        -Dsonar.projectKey=aceest-fitness ^
-                        -Dsonar.sources=. ^
-                        -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.login=%SONAR_AUTH_TOKEN%
+                    C:\\sonar-scanner\\bin\\sonar-scanner.bat ^
+                    -Dsonar.projectKey=aceest-fitness ^
+                    -Dsonar.sources=. ^
+                    -Dsonar.host.url=http://localhost:9000 ^
+                    -Dsonar.login=%SONAR_AUTH_TOKEN%
                     """
                 }
             }
         }
-
+        
         stage('Docker Build and Push') {
             steps {
                 withCredentials([usernamePassword(
