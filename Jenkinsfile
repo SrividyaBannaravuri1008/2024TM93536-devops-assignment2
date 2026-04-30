@@ -48,6 +48,10 @@ pipeline {
             }
         }
 
+        environment {
+        PATH = "C:\\sonar-scanner\\sonarqube-26.4.0.121862\\bin\\windows-x86-64;${env.PATH}"
+        }
+        
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
