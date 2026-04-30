@@ -57,9 +57,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - run: |
-          docker build -t srividya1008/aceest-fitness:${{ github.sha }} .
-          docker push srividya1008/aceest-fitness:${{ github.sha }}
+          docker build -t srividya1008/aceestfitness:${{ github.sha }} .
+          docker push srividya1008/aceestfitness:${{ github.sha }}
 
-          docker tag srividya1008/aceest-fitness:${{ github.sha }} srividya1008/aceest-fitness:latest
-          docker push srividya1008/aceest-fitness:latest
+          docker tag srividya1008/aceestfitness:${{ github.sha }} srividya1008/aceestfitness:latest
+          docker push srividya1008/aceestfitness:latest
           
