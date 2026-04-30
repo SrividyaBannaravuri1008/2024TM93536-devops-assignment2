@@ -56,7 +56,7 @@ pipeline {
                     -Dsonar.projectKey=aceest-fitness ^
                     -Dsonar.sources=. ^
                     -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.login=%SONAR_AUTH_TOKEN%
+                    -Dsonar.login=%sonar-token%
                     """
                 }
             }
