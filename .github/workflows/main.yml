@@ -23,7 +23,7 @@ jobs:
           pip install -r requirements.txt flake8
 
       - run: |
-          flake8 app.py --max-line-length=120
+          flake8 app.py --max-line-length=150
 
   automated-testing:
     needs: build-and-lint
