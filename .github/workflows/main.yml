@@ -39,7 +39,10 @@ jobs:
       - run: |
           pip install -r requirements.txt pytest pytest-cov
 
-      - run: |
+      # ✅ FIX: Add PYTHONPATH so app.py is discoverable
+      - name: Run Tests
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
           pytest tests/ -v --cov=. --cov-report=xml
 
   docker-build-push:
@@ -60,3 +63,4 @@ jobs:
 
           docker tag srividya1008/aceest-fitness:${{ github.sha }} srividya1008/aceest-fitness:latest
           docker push srividya1008/aceest-fitness:latest
+          
