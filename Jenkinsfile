@@ -48,25 +48,21 @@ pipeline {
             }
         }
 
-        // stage('SonarQube Analysis') {
-        //     steps {
-        //         echo 'Running SonarQube scan...'
-        //         bat """
-        //             sonar-scanner
-        //         """
-        //     }
-        // }
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube scan...'
-                script {
-                    def scannerHome = tool 'sonar-scanner'
-                    withSonarQubeEnv('SonarQube') {
-                        bat "${scannerHome}\\bin\\sonar-scanner.bat"
-                    }
+                withSonarQubeEnv('SonarQube') {
+                    bat """
+                        sonar-scanner ^
+                        -Dsonar.projectKey=aceest-fitness ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.login=%SONAR_AUTH_TOKEN%
+                    """
                 }
             }
         }
+
         stage('Docker Build and Push') {
             steps {
                 withCredentials([usernamePassword(
