@@ -52,11 +52,11 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                    C:\\sonar-scanner\\bin\\sonar-scanner.bat ^
+                    sonar-scanner ^
                     -Dsonar.projectKey=aceest-fitness ^
                     -Dsonar.sources=. ^
                     -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.login=%sonar-token%
+                    -Dsonar.login=%SONAR_TOKEN%
                     """
                 }
             }
