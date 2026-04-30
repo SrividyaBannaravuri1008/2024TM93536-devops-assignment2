@@ -39,7 +39,6 @@ jobs:
       - run: |
           pip install -r requirements.txt pytest pytest-cov
 
-      # ✅ FIX: Add PYTHONPATH so app.py is discoverable
       - name: Run Tests
         run: |
           export PYTHONPATH=$PYTHONPATH:.
