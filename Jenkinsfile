@@ -4,6 +4,7 @@ pipeline {
     environment {
         PYTHON = "C:\\Users\\srivi.DESKTOP-L6OI7G9\\AppData\\Local\\Python\\bin\\python.exe"
         IMAGE_NAME = "srividya1008/aceest-service"
+        SONAR_SCANNER = "C:\\sonar-scanner\\bin\\sonar-scanner.bat"
     }
 
     stages {
@@ -21,9 +22,9 @@ pipeline {
                 bat """
                     "${PYTHON}" -m venv venv
                     call venv\\Scripts\\activate.bat
-                    venv\\Scripts\\python.exe -m pip install --upgrade pip
-                    venv\\Scripts\\pip.exe install -r requirements.txt
-                    venv\\Scripts\\pip.exe install flake8 pytest
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pip install flake8 pytest pytest-cov
                 """
             }
         }
@@ -33,7 +34,7 @@ pipeline {
                 echo 'Running flake8 checks...'
                 bat """
                     call venv\\Scripts\\activate.bat
-                    venv\\Scripts\\python.exe -m flake8 app.py --select=E9,F63,F7,F82 --show-source --statistics
+                    flake8 app.py --select=E9,F63,F7,F82 --show-source --statistics
                 """
             }
         }
@@ -43,31 +44,39 @@ pipeline {
                 echo 'Running Pytest tests...'
                 bat """
                     call venv\\Scripts\\activate.bat
-                    venv\\Scripts\\python.exe -m pytest tests/ -v --tb=short
+                    pytest tests/ -v --tb=short
                 """
             }
         }
 
-        environment {
-        PATH = "C:\\sonar-scanner\\sonarqube-26.4.0.121862\\bin\\windows-x86-64;${env.PATH}"
-        }
-        
         stage('SonarQube Analysis') {
             steps {
+                echo 'Running SonarQube scan...'
                 withSonarQubeEnv('SonarQube') {
-                    bat """
-                    sonar-scanner ^
-                    -Dsonar.projectKey=aceest-fitness ^
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.login=%SONAR_TOKEN%
-                    """
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        bat """
+                            ${SONAR_SCANNER} ^
+                            -Dsonar.projectKey=aceest-fitness ^
+                            -Dsonar.sources=. ^
+                            -Dsonar.host.url=http://localhost:9000 ^
+                            -Dsonar.login=%SONAR_TOKEN%
+                        """
+                    }
                 }
             }
         }
-        
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+
         stage('Docker Build and Push') {
             steps {
+                echo 'Building and pushing Docker image...'
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
@@ -85,7 +94,6 @@ pipeline {
     }
 
     post {
-
         success {
             echo 'BUILD SUCCESS - ACEest pipeline completed successfully.'
         }
