@@ -48,15 +48,25 @@ pipeline {
             }
         }
 
+        // stage('SonarQube Analysis') {
+        //     steps {
+        //         echo 'Running SonarQube scan...'
+        //         bat """
+        //             sonar-scanner
+        //         """
+        //     }
+        // }
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube scan...'
-                bat """
-                    sonar-scanner
-                """
+                script {
+                    def scannerHome = tool 'sonar-scanner'
+                    withSonarQubeEnv('SonarQube') {
+                        bat "${scannerHome}\\bin\\sonar-scanner.bat"
+                    }
+                }
             }
         }
-
         stage('Docker Build and Push') {
             steps {
                 withCredentials([usernamePassword(
